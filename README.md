@@ -17,3 +17,13 @@ $ ../bin/pamn -i <init>.txt -o <output>.root
 ```
 where, `<init>.txt` is a txt file that list up the full paths to nSort output files,
 and `<output>.root` is the pamn output root file.
+
+## branches
+pamn output has the following branches.
+
+- ns
+- fv
+- NR
+- Ed
+- secondS2
+- nhits
