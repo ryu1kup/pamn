@@ -39,16 +39,18 @@ void NSortProcessor::ProcessForNVeto(){
     m_otree->Branch("nhits", &m_nhits);
 
     // read the init
-    std::string ifilename;
-    std::ifstream ifs(m_init);
-    std::vector<TString> ifiles;
-    std::string comment_head = "#";
-    while (ifs >> ifilename) {
-        if (std::equal(comment_head.cbegin(), comment_head.cend(), ifilename.cbegin())) {
-            continue;
-        }
-        ifiles.push_back(ifilename);
+  std::string ifilename;
+  std::ifstream ifs(m_init);
+  std::vector<TString> ifiles;
+  while (std::getline(ifs, ifilename)) {
+    if (ifilename == "") {
+      continue;
+    } else if (ifilename.at(0) == '#') {
+      continue;
+    } else {
+      ifiles.push_back(ifilename);
     }
+  }
 
     // loop for input files
     ULong64_t total_entries = 0;

@@ -1,3 +1,8 @@
+# project: cryostat_neutron_U238_octagon
+# primary: neutron
+# volume : SS_OuterCryostat SS_InnerCryostat
+# energy : steel_U238
+
 /project/lgrandi/ryuichi/xenonnt/montecarlo/2.5.0/cryostat_neutron_U238_octagon/nSort_out/abs10_ref99/cryostat_neutron_U238_octagon_abs10_ref99_0_Sort.root
 /project/lgrandi/ryuichi/xenonnt/montecarlo/2.5.0/cryostat_neutron_U238_octagon/nSort_out/abs10_ref99/cryostat_neutron_U238_octagon_abs10_ref99_100_Sort.root
 /project/lgrandi/ryuichi/xenonnt/montecarlo/2.5.0/cryostat_neutron_U238_octagon/nSort_out/abs10_ref99/cryostat_neutron_U238_octagon_abs10_ref99_101_Sort.root
