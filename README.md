@@ -13,10 +13,16 @@ $ make && make install
 ```
 $ mkdir ./work
 $ cd ./work
-$ ../bin/pamn -i <init>.txt -o <output>.root
+$ ../bin/pamn -i input.txt -o output.root
 ```
-where, `<init>.txt` is a txt file that list up the full paths to nSort output files,
-and `<output>.root` is the pamn output root file.
+where, `input.txt` is a txt file that list up the paths from the working directory to nSort output files,
+and `output.root` is the pamn output root file.
+
+
+Tips: You can make much easily input.txt as a following way,
+```
+$ ls /path/to/inputdir/*.root > input.txt
+```
 
 ## branches
 pamn output has the following branches.

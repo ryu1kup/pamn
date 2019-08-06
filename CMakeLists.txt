@@ -20,7 +20,7 @@ add_executable(pamn ${sources} ${headers})
 target_link_libraries(pamn ${ROOT_LIBRARIES})
 
 # compiler options
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -O2")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -O1")
 
 # install the binary
 install(TARGETS pamn DESTINATION ${CMAKE_INSTALL_PREFIX})

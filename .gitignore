@@ -1,5 +1,7 @@
 work/*
 build/*
+bin/*
 .*
 *.txt
 *.root
+*.ipynb
