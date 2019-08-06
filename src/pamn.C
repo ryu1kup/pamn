@@ -1,51 +1,37 @@
-#include "NSortProcessor.h"
+// ------------------------------------ //
+// pamn.C
+// ------------------------------------ //
 
-// ROOT headers
+#include <iostream>
+#include <unistd.h>
+#include <string>
+
 #include <TString.h>
 #include <TFile.h>
 
-// C++ headers
-#include <iostream>
-#include <unistd.h>
+#include "cmdline.h"
+#include "NSortProcessor.h"
 
-void GetArgs(Int_t argc, Char_t** argv);
-TString init = "./init.txt";
-TString output = "./output.root";
 
-Int_t main(Int_t argc, Char_t** argv){
-    // get options
-    GetArgs(argc, argv);
+int main(int argc, char** argv){
 
-    // analysis
-    std::cout << "-----> Start processing and merging nSort results" << std::endl;
-    NSortProcessor* processor = new NSortProcessor(init, output);
+    cmdline::parser pars;
+    pars.add<std::string>("input_list", 'l', "List file name of input files", true, "./input.txt");
+    pars.add<std::string>("output_name", 'o', "Output root file name", true, "./output.root");
+    pars.add<int>("verbose", 'v', "Verbose level", false, 1);
+
+    pars.parse_check(argc, argv);
+
+    const int Verbose= pars.get<int>("verbose");
+    const TString InputListName = pars.get<std::string>("input_list");
+    const TString OutputName = pars.get<std::string>("output_name");
+
+    if(Verbose>1) std::cout << "-----> Start processing and merging nSort results" << std::endl;
+    
+    NSortProcessor* processor = new NSortProcessor(InputListName, OutputName);
     processor->ProcessForNVeto();
 
-    std::cout << "-----> done!" << std::endl;
+    if(Verbose>1) std::cout << "-----> done!" << std::endl;
+    return 0;
 }
 
-void GetArgs(Int_t argc, Char_t** argv){
-    while ((argc > 1) && (argv[1][0] == '-')) {
-        switch (argv[1][1]) {
-            case 'i':
-                init = argv[2];
-                ++argv;
-                --argc;
-                break;
-
-            case 'o':
-                output = argv[2];
-                ++argv;
-                --argc;
-                break;
-
-            default:
-                std::cout << "Invalid option specified" << std::endl;
-                ++argv;
-                --argc;
-                break;
-        }
-        ++argv;
-        --argc;
-    }
-}
