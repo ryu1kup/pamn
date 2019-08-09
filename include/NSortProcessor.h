@@ -22,9 +22,11 @@ public:
 
     void SetInputBranchs();
 
-    void SetVerbose(int Verbose){this->Verbose = Verbose;};
+    void SetVerbose(int Verbose){
+        this->Verbose = Verbose;
+    }
 
-    std::vector<TString> ifiles;
+    std::vector<TString> m_ifiles;
     int Verbose = 1;
 
 private:
@@ -43,25 +45,23 @@ private:
     TTree* m_itree;
 
     constexpr static UInt_t nsmax = 3000;
-    Int_t           ns;
-    Float_t         X[nsmax];
-    Float_t         Y[nsmax];
-    Float_t         Z[nsmax];
-    Float_t         NR[nsmax];
-    Float_t         Ed[nsmax];
-    Float_t         S2[nsmax];
-    std::vector<Int_t>     *pmthitid = nullptr;
+    Int_t ns;
+    Float_t X[nsmax];
+    Float_t Y[nsmax];
+    Float_t Z[nsmax];
+    Float_t NR[nsmax];
+    Float_t Ed[nsmax];
+    Float_t S2[nsmax];
+    std::vector<Int_t>* pmthitid = nullptr;
 
-    TBranch        *b_ns;
-    TBranch        *b_X;
-    TBranch        *b_Y;
-    TBranch        *b_Z;
-    TBranch        *b_NR;
-    TBranch        *b_Ed;
-    TBranch        *b_S2;
-    TBranch        *b_pmthitid;
+    TBranch* b_ns;
+    TBranch* b_X;
+    TBranch* b_Y;
+    TBranch* b_Z;
+    TBranch* b_NR;
+    TBranch* b_Ed;
+    TBranch* b_S2;
+    TBranch* b_pmthitid;
 };
-
-
 
 #endif

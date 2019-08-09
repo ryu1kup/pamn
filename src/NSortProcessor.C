@@ -33,9 +33,7 @@ void NSortProcessor::Init(){
     this->ActivateBranchs();
 }
 
-
 void NSortProcessor::ActivateBranchs(){
-
     // initialize the output tree
     // Copy branchs from the input files
     m_otree->Branch("ns", &ns);
@@ -47,28 +45,23 @@ void NSortProcessor::ActivateBranchs(){
     // Calc variables in Process()
     m_otree->Branch("fv", &m_fv);
     m_otree->Branch("nhits", &m_nhits);
-
 }
 
-
 void NSortProcessor::SetFileList(){
-
     // read the init
     std::string ifilename;
     std::ifstream ifs(m_init);
-    // std::vector<TString> ifiles;
+    // std::vector<TString> m_ifiles;
     while (std::getline(ifs, ifilename)) {
         if (ifilename == "") {
             continue;
         } else if (ifilename.at(0) == '#') {
             continue;
         } else {
-            ifiles.emplace_back(ifilename);
+            m_ifiles.emplace_back(ifilename);
         }
     }
-
 }
-
 
 void NSortProcessor::SetInputBranchs(){
     m_itree->SetBranchAddress("ns", &ns, &b_ns);
@@ -79,17 +72,14 @@ void NSortProcessor::SetInputBranchs(){
     m_itree->SetBranchAddress("Ed", Ed, &b_Ed);
     m_itree->SetBranchAddress("S2", S2, &b_S2);
     m_itree->SetBranchAddress("pmthitid", &pmthitid, &b_pmthitid);
-
 }
-
-
 
 void NSortProcessor::Process(){
     // loop for input files
     ULong64_t total_entries = 0;
-    for (const TString & ifile : ifiles) {
+    for (const TString & ifile : m_ifiles) {
         // display the current input file
-        if(Verbose>1) std::cout << "-----> inputfile: " << ifile << std::endl;
+        if (Verbose > 1) std::cout << "-----> inputfile: " << ifile << std::endl;
 
         // initialize the input tree
         m_ifile = TFile::Open(ifile, "read");
@@ -103,9 +93,8 @@ void NSortProcessor::Process(){
         const ULong64_t nentries = m_itree->GetEntries();
         total_entries += nentries;
         for (UInt_t ientry = 0; ientry < nentries; ++ientry) {
-            if(Verbose>2 && ientry % (nentries/10) == 0) std::cout << "File read " << (double)ientry/nentries*100 << "%" << std::endl;
+            if (Verbose > 2 && ientry % (nentries / 10) == 0) std::cout << "File read " << 100.0 * ientry / nentries << "%" << std::endl;
             m_itree->GetEntry(ientry);
-
 
             // ------------------------------------>>>
             // FV
@@ -113,7 +102,6 @@ void NSortProcessor::Process(){
             const Float_t z_fv = Z[0] + 739.0;
             m_fv = TMath::Power(TMath::Abs(z_fv/629.0), 3.0) + TMath::Power(TMath::Abs(r2/396900.0), 3.0);
             // <<<------------------------------------
-
 
             // ------------------------------------>>>
             // nhits
@@ -140,7 +128,6 @@ void NSortProcessor::Process(){
             m_nhits = nhits;
             // <<<------------------------------------
 
-
             // fill output tree
             m_otree->Fill();
         }
@@ -151,15 +138,11 @@ void NSortProcessor::Process(){
     }
 
     // write the output tree into the output file
-    if(Verbose>1) std::cout << "-----> " << total_entries << " events are written." << std::endl;
-
+    if (Verbose > 1) std::cout << "-----> " << total_entries << " events are written." << std::endl;
 }
-
-
 
 void NSortProcessor::Terminate(){
     m_ofile->cd();
     m_otree->Write();
     m_ofile->Close();
-
 }

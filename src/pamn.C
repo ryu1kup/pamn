@@ -14,7 +14,7 @@
 
 
 int main(int argc, char** argv){
-
+    // parse arguments
     cmdline::parser pars;
     pars.add<std::string>("input_list", 'l', "List file name of input files", true, "./input.txt");
     pars.add<std::string>("output_name", 'o', "Output root file name", true, "./output.root");
@@ -26,8 +26,9 @@ int main(int argc, char** argv){
     const TString InputListName = pars.get<std::string>("input_list");
     const TString OutputName = pars.get<std::string>("output_name");
 
-    if(Verbose>1) std::cout << "-----> Start processing and merging nSort results" << std::endl;
+    if (Verbose > 1) std::cout << "-----> Start processing and merging nSort results" << std::endl;
     
+    // process nSort outputs
     NSortProcessor* processor = new NSortProcessor(InputListName, OutputName);
     processor->SetVerbose(Verbose);
 
@@ -35,7 +36,8 @@ int main(int argc, char** argv){
     processor->Process();
     processor->Terminate();
 
-    if(Verbose>1) std::cout << "-----> done!" << std::endl;
+    if (Verbose > 1) std::cout << "-----> done!" << std::endl;
+
     return 0;
 }
 
