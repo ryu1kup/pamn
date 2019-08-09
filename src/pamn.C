@@ -29,7 +29,11 @@ int main(int argc, char** argv){
     if(Verbose>1) std::cout << "-----> Start processing and merging nSort results" << std::endl;
     
     NSortProcessor* processor = new NSortProcessor(InputListName, OutputName);
-    processor->ProcessForNVeto();
+    processor->SetVerbose(Verbose);
+
+    processor->Init();
+    processor->Process();
+    processor->Terminate();
 
     if(Verbose>1) std::cout << "-----> done!" << std::endl;
     return 0;

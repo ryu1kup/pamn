@@ -29,7 +29,12 @@ NSortProcessor::~NSortProcessor()
     delete m_ofile;
 }
 
-void NSortProcessor::ProcessForNVeto(){
+void NSortProcessor::Init(){
+    this->SetFileList();
+    this->ActivateBranchs();
+}
+void NSortProcessor::ActivateBranchs(){
+
     // initialize the output tree
     m_otree->Branch("ns", &m_ns);
     m_otree->Branch("fv", &m_fv);
@@ -38,10 +43,13 @@ void NSortProcessor::ProcessForNVeto(){
     m_otree->Branch("secondS2", &m_secondS2);
     m_otree->Branch("nhits", &m_nhits);
 
+}
+void NSortProcessor::SetFileList(){
+
     // read the init
     std::string ifilename;
     std::ifstream ifs(m_init);
-    std::vector<TString> ifiles;
+    // std::vector<TString> ifiles;
     while (std::getline(ifs, ifilename)) {
         if (ifilename == "") {
             continue;
@@ -52,9 +60,11 @@ void NSortProcessor::ProcessForNVeto(){
         }
     }
 
+}
+void NSortProcessor::Process(){
     // loop for input files
     ULong64_t total_entries = 0;
-    for (TString ifile : ifiles) {
+    for (const TString & ifile : ifiles) {
         // display the current input file
         std::cout << "-----> inputfile: " << ifile << std::endl;
 
@@ -63,6 +73,7 @@ void NSortProcessor::ProcessForNVeto(){
         m_ifile->cd("events");
         m_itree = new TTree();
         m_itree = dynamic_cast<TTree*>(gDirectory->Get("events"));
+        
         m_itree->SetBranchAddress("ns", &ns);
         m_itree->SetBranchAddress("X", X);
         m_itree->SetBranchAddress("Y", Y);
@@ -122,7 +133,11 @@ void NSortProcessor::ProcessForNVeto(){
 
     // write the output tree into the output file
     std::cout << "-----> " << total_entries << " events are written." << std::endl;
+
+}
+void NSortProcessor::Terminate(){
     m_ofile->cd();
     m_otree->Write();
     m_ofile->Close();
+
 }
