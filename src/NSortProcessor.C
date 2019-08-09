@@ -19,7 +19,7 @@ NSortProcessor::NSortProcessor(TString init, TString output):
     m_output(output), m_init(init)
 {
     m_ofile = new TFile(m_output, "recreate");
-    m_otree = new TTree("events", "process and integrate nSort resultsh");
+    m_otree = new TTree("events", "process and merge nSort results");
 }
 
 NSortProcessor::~NSortProcessor()
