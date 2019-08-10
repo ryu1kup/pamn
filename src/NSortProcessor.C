@@ -16,11 +16,10 @@
 #include <algorithm>
 
 NSortProcessor::NSortProcessor(TString init, TString output):
-    m_init(init),
-    m_output(output)
+    m_output(output), m_init(init)
 {
     m_ofile = new TFile(m_output, "recreate");
-    m_otree = new TTree("events", "process and integrate nSort resultsh");
+    m_otree = new TTree("events", "process and merge nSort results");
 }
 
 NSortProcessor::~NSortProcessor()
@@ -29,64 +28,82 @@ NSortProcessor::~NSortProcessor()
     delete m_ofile;
 }
 
-void NSortProcessor::ProcessForNVeto(){
-    // initialize the output tree
-    m_otree->Branch("ns", &m_ns);
-    m_otree->Branch("fv", &m_fv);
-    m_otree->Branch("NR", &m_NR);
-    m_otree->Branch("Ed", &m_Ed);
-    m_otree->Branch("secondS2", &m_secondS2);
-    m_otree->Branch("nhits", &m_nhits);
+void NSortProcessor::Init(){
+    this->SetFileList();
+    this->ActivateBranchs();
+}
 
+void NSortProcessor::ActivateBranchs(){
+    // initialize the output tree
+    // Copy branchs from the input files
+    m_otree->Branch("ns", &ns);
+    m_otree->Branch("NR", &NR[0]);
+    m_otree->Branch("Ed", &Ed[0]);
+    m_otree->Branch("secondS2", &S2[1]);
+    m_otree->Branch("pmthitid", &pmthitid);
+
+    // Calc variables in Process()
+    m_otree->Branch("fv", &m_fv);
+    m_otree->Branch("nhits", &m_nhits);
+}
+
+void NSortProcessor::SetFileList(){
     // read the init
     std::string ifilename;
     std::ifstream ifs(m_init);
-    std::vector<TString> ifiles;
+    // std::vector<TString> m_ifiles;
     while (std::getline(ifs, ifilename)) {
         if (ifilename == "") {
             continue;
         } else if (ifilename.at(0) == '#') {
             continue;
         } else {
-            ifiles.push_back(ifilename);
+            m_ifiles.emplace_back(ifilename);
         }
     }
+}
 
+void NSortProcessor::SetInputBranchs(){
+    m_itree->SetBranchAddress("ns", &ns, &b_ns);
+    m_itree->SetBranchAddress("X", X, &b_X);
+    m_itree->SetBranchAddress("Y", Y, &b_Y);
+    m_itree->SetBranchAddress("Z", Z, &b_Z);
+    m_itree->SetBranchAddress("NR", NR, &b_NR);
+    m_itree->SetBranchAddress("Ed", Ed, &b_Ed);
+    m_itree->SetBranchAddress("S2", S2, &b_S2);
+    m_itree->SetBranchAddress("pmthitid", &pmthitid, &b_pmthitid);
+}
+
+void NSortProcessor::Process(){
     // loop for input files
     ULong64_t total_entries = 0;
-    for (TString ifile : ifiles) {
+    for (const TString & ifile : m_ifiles) {
         // display the current input file
-        std::cout << "-----> inputfile: " << ifile << std::endl;
+        if (Verbose > 1) std::cout << "-----> inputfile: " << ifile << std::endl;
 
         // initialize the input tree
         m_ifile = TFile::Open(ifile, "read");
         m_ifile->cd("events");
         m_itree = new TTree();
         m_itree = dynamic_cast<TTree*>(gDirectory->Get("events"));
-        m_itree->SetBranchAddress("ns", &ns);
-        m_itree->SetBranchAddress("X", X);
-        m_itree->SetBranchAddress("Y", Y);
-        m_itree->SetBranchAddress("Z", Z);
-        m_itree->SetBranchAddress("NR", NR);
-        m_itree->SetBranchAddress("Ed", Ed);
-        m_itree->SetBranchAddress("S2", S2);
-        m_itree->SetBranchAddress("pmthitid", &pmthitid);
+
+        this->SetInputBranchs();
 
         // loop for events
         const ULong64_t nentries = m_itree->GetEntries();
         total_entries += nentries;
         for (UInt_t ientry = 0; ientry < nentries; ++ientry) {
+            if (Verbose > 2 && ientry % (nentries / 10) == 0) std::cout << "File read " << 100.0 * ientry / nentries << "%" << std::endl;
             m_itree->GetEntry(ientry);
 
-            // nSort branches
-            m_ns = ns;
+            // ------------------------------------>>>
+            // FV
             const Float_t r2 = X[0] * X[0] + Y[0] * Y[0];
             const Float_t z_fv = Z[0] + 739.0;
             m_fv = TMath::Power(TMath::Abs(z_fv/629.0), 3.0) + TMath::Power(TMath::Abs(r2/396900.0), 3.0);
-            m_NR = NR[0];
-            m_Ed = Ed[0];
-            m_secondS2 = S2[1];
+            // <<<------------------------------------
 
+            // ------------------------------------>>>
             // nhits
             constexpr UInt_t nNV = 121;
             std::array<Float_t, nNV> cnt {0};
@@ -104,12 +121,12 @@ void NSortProcessor::ProcessForNVeto(){
                 } else {
                     phe = 0.;
                 }
-
                 if (phe >= phe_threshold) {
                     ++nhits;
                 }
             }
             m_nhits = nhits;
+            // <<<------------------------------------
 
             // fill output tree
             m_otree->Fill();
@@ -121,7 +138,10 @@ void NSortProcessor::ProcessForNVeto(){
     }
 
     // write the output tree into the output file
-    std::cout << "-----> " << total_entries << " events are written." << std::endl;
+    if (Verbose > 1) std::cout << "-----> " << total_entries << " events are written." << std::endl;
+}
+
+void NSortProcessor::Terminate(){
     m_ofile->cd();
     m_otree->Write();
     m_ofile->Close();
