@@ -41,11 +41,12 @@ void NSortProcessor::Init(){
     std::sort(m_ifiles.begin(), m_ifiles.end());
     m_ifiles.erase(std::unique(m_ifiles.begin(), m_ifiles.end()), m_ifiles.end());
 
-    if (Verbose > 2){
-        std::cout << "File List" << std::endl;
+    if (Verbose > 1){
+        std::cout << "File List -------------------" << std::endl;
         for(auto ifile : m_ifiles){
             std::cout << ifile << std::endl;
         }
+        std::cout << "-----------------------------" << std::endl;
     }
 
     this->ActivateBranchs();
@@ -139,9 +140,12 @@ void NSortProcessor::SetInputBranchs(){
 void NSortProcessor::Process(){
     // loop for input files
     ULong64_t total_entries = 0;
+    size_t total_filenum = m_ifiles.size();
+    size_t ReadFile = 0;
+
     for (const TString & ifile : m_ifiles) {
         // display the current input file
-        if (Verbose > 1) std::cout << "-----> inputfile: " << ifile << std::endl;
+        if (Verbose > 1) std::cout << "Inputfile: " << ifile << std::endl;
 
         // initialize the input tree
         m_ifile = TFile::Open(ifile, "read");
@@ -155,7 +159,27 @@ void NSortProcessor::Process(){
         const ULong64_t nentries = m_itree->GetEntries();
         total_entries += nentries;
         for (UInt_t ientry = 0; ientry < nentries; ++ientry) {
-            if (Verbose > 2 && ientry % (nentries / 10) == 0) std::cout << "File read " << 100.0 * ientry / nentries << "%" << std::endl;
+            if (Verbose > 1) {
+                double progress = (double) ientry / nentries;
+                const int barlength = 80;
+                int pos = progress * barlength;
+                std::cout << "[";
+                for (int i = 0; i < barlength; ++i) {
+                    if (i < pos) {
+                        std::cout << "-";
+                    } else if (i == pos) {
+                        std::cout << ">";
+                    } else {
+                        std::cout << " ";
+                    }
+                }
+                if (ientry == nentries - 1) {
+                    std::cout << "] 100%" << std::endl;
+                } else {
+                    std::cout << "] " << int(progress * 100) << "%\r";
+                }
+                std::cout.flush();
+            }
             m_itree->GetEntry(ientry);
 
             // ------------------------------------>>>
@@ -194,13 +218,41 @@ void NSortProcessor::Process(){
             m_otree->Fill();
         }
 
+        if (Verbose == 1) {
+            double progress = (double) ReadFile / total_filenum;
+            const int barlength = 50;
+            int pos = progress * barlength;
+            std::cout << "[";
+            for (int i = 0; i < barlength; ++i) {
+                if (i < pos) {
+                    std::cout << "-";
+                } else if (i == pos) {
+                    std::cout << ">";
+                } else {
+                    std::cout << " ";
+                }
+            }
+            if (ReadFile == total_filenum - 1) {
+                std::cout << "\r" ;
+                std::cout << "[";
+                for (int i = 0; i < barlength; ++i) {
+                        std::cout << "-";
+                }
+                std::cout << "] 100%                                " << std::endl;
+            } else {
+                std::cout << "] " << int(progress * 100) << "%  " << ifile << "\r";
+            }
+            std::cout.flush();
+        }
+
         // clean up
         delete m_itree;
         delete m_ifile;
+        ++ReadFile;
     }
 
     // write the output tree into the output file
-    if (Verbose > 1) std::cout << "-----> " << total_entries << " events are written." << std::endl;
+    if (Verbose > 0) std::cout << total_entries << " events are written." << std::endl;
 }
 
 void NSortProcessor::Terminate(){

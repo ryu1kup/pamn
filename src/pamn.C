@@ -16,7 +16,7 @@
 int main(int argc, char** argv){
     // parse arguments
     cmdline::parser pars;
-    pars.add<std::string>("input_file", 'i', "File name of input file(s)", false, "../../data/output0005_Sort.root");
+    pars.add<std::string>("input_file", 'i', "File name of input file(s)", false, "../../data/output0001_Sort.root");
     pars.add<std::string>("input_list", 'l', "List file name of input files", false, "./input.txt");
     pars.add<std::string>("output_name", 'o', "Output root file name", true, "./output.root");
     pars.add<int>("verbose", 'v', "Verbose level", false, 1);
