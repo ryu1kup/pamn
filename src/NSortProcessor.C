@@ -15,6 +15,8 @@
 #include <iterator>
 #include <algorithm>
 
+#include <dirent.h>
+
 NSortProcessor::NSortProcessor(TString output):
     m_output(output)
 {
@@ -84,8 +86,42 @@ void NSortProcessor::AddFileList(const std::string & listname){
 
 void NSortProcessor::AddFile(const std::string & filename){
 
-    m_ifiles.emplace_back(filename);
-    AlreadyMakeFileList = true;
+    if(filename.find("*") != std::string::npos){
+
+        int placeWildCard = filename.find("*");
+        std::string postname = filename.substr(1+placeWildCard, filename.length());
+        std::string filepath;
+        int placeSlash = filename.rfind("/");
+        if (filename.rfind("/") != std::string::npos) {
+            filepath = filename.substr(0, filename.rfind("/") + 1);
+        } else {
+            filepath = "./";
+        }
+
+        std::string prename = filename.substr(placeSlash+1, placeWildCard-placeSlash-1);
+        DIR *dir;
+        struct dirent *dent;
+
+        dir = opendir(filepath.c_str());
+        if (dir == nullptr) {
+            perror(filepath.c_str());
+            exit(2);
+        }
+        while ((dent = readdir(dir)) != nullptr) {
+            std::string ilist = dent->d_name;
+            if(ilist.find(prename) != std::string::npos && ilist.find(postname) != std::string::npos){
+                m_ifiles.emplace_back(filepath+ilist);
+                AlreadyMakeFileList = true;
+            }
+        }
+        closedir(dir);
+
+
+    } else {
+        m_ifiles.emplace_back(filename);
+        AlreadyMakeFileList = true;
+    }
+
 
 }
 
