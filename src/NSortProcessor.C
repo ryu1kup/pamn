@@ -15,8 +15,8 @@
 #include <iterator>
 #include <algorithm>
 
-NSortProcessor::NSortProcessor(TString init, TString output):
-    m_output(output), m_init(init)
+NSortProcessor::NSortProcessor(TString output):
+    m_output(output)
 {
     m_ofile = new TFile(m_output, "recreate");
     m_otree = new TTree("events", "process and merge nSort results");
@@ -29,7 +29,23 @@ NSortProcessor::~NSortProcessor()
 }
 
 void NSortProcessor::Init(){
-    this->SetFileList();
+
+    if (!AlreadyMakeFileList){
+        std::cerr << "Input file list has not been created." << std::endl;
+        exit(1);
+    }
+
+    // remove duplicated files
+    std::sort(m_ifiles.begin(), m_ifiles.end());
+    m_ifiles.erase(std::unique(m_ifiles.begin(), m_ifiles.end()), m_ifiles.end());
+
+    if (Verbose > 2){
+        std::cout << "File List" << std::endl;
+        for(auto ifile : m_ifiles){
+            std::cout << ifile << std::endl;
+        }
+    }
+
     this->ActivateBranchs();
 }
 
@@ -47,10 +63,10 @@ void NSortProcessor::ActivateBranchs(){
     m_otree->Branch("nhits", &m_nhits);
 }
 
-void NSortProcessor::SetFileList(){
+void NSortProcessor::AddFileList(const std::string & listname){
     // read the init
     std::string ifilename;
-    std::ifstream ifs(m_init);
+    std::ifstream ifs(listname);
     // std::vector<TString> m_ifiles;
     while (std::getline(ifs, ifilename)) {
         if (ifilename == "") {
@@ -61,6 +77,16 @@ void NSortProcessor::SetFileList(){
             m_ifiles.emplace_back(ifilename);
         }
     }
+
+    AlreadyMakeFileList = true;
+}
+
+
+void NSortProcessor::AddFile(const std::string & filename){
+
+    m_ifiles.emplace_back(filename);
+    AlreadyMakeFileList = true;
+
 }
 
 void NSortProcessor::SetInputBranchs(){

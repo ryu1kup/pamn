@@ -10,7 +10,7 @@
 class NSortProcessor {
 public:
     NSortProcessor() = delete;
-    NSortProcessor(TString init, TString output);
+    NSortProcessor(TString output);
     ~NSortProcessor();
 
     void Init();
@@ -18,14 +18,16 @@ public:
     void Terminate();
 
     void ActivateBranchs();
-    void SetFileList();
+    void AddFileList(const std::string & listname);
+    void AddFile(const std::string & filename);
 
-    void SetInputBranchs();
 
     void SetVerbose(int Verbose){
         this->Verbose = Verbose;
     }
 
+private:
+    void SetInputBranchs();
     std::vector<TString> m_ifiles;
     int Verbose = 1;
 
@@ -40,7 +42,8 @@ private:
     Int_t m_nhits;
 
     // For input files
-    TString m_init;
+    bool AlreadyMakeFileList = false;
+    // TString m_init;
     TFile* m_ifile;
     TTree* m_itree;
 
