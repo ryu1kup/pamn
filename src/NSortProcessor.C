@@ -1,38 +1,32 @@
-// This own header
-#include "NSortProcessor.h"
-
-// ROOT headers
-#include <TFile.h>
-#include <TTree.h>
-#include <TMath.h>
-#include <TRandom3.h>
-
-// C++ headers
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <array>
 #include <iterator>
 #include <algorithm>
-
 #include <dirent.h>
 
-NSortProcessor::NSortProcessor(TString output):
-    m_output(output)
-{
+#include <TFile.h>
+#include <TTree.h>
+#include <TMath.h>
+#include <TRandom3.h>
+
+#include "NSortProcessor.h"
+
+NSortProcessor::NSortProcessor(TString output) :
+        m_output(output) {
     m_ofile = new TFile(m_output, "recreate");
     m_otree = new TTree("events", "process and merge nSort results");
 }
 
-NSortProcessor::~NSortProcessor()
-{
+NSortProcessor::~NSortProcessor() {
     delete m_otree;
     delete m_ofile;
 }
 
-void NSortProcessor::Init(){
+void NSortProcessor::Init() {
 
-    if (!AlreadyMakeFileList){
+    if (!AlreadyMakeFileList) {
         std::cerr << "Input file list has not been created." << std::endl;
         exit(1);
     }
@@ -41,9 +35,9 @@ void NSortProcessor::Init(){
     std::sort(m_ifiles.begin(), m_ifiles.end());
     m_ifiles.erase(std::unique(m_ifiles.begin(), m_ifiles.end()), m_ifiles.end());
 
-    if (Verbose > 1){
+    if (Verbose > 1) {
         std::cout << "File List -------------------" << std::endl;
-        for(auto ifile : m_ifiles){
+        for (auto ifile : m_ifiles) {
             std::cout << ifile << std::endl;
         }
         std::cout << "-----------------------------" << std::endl;
@@ -52,7 +46,7 @@ void NSortProcessor::Init(){
     this->ActivateBranchs();
 }
 
-void NSortProcessor::ActivateBranchs(){
+void NSortProcessor::ActivateBranchs() {
     // initialize the output tree
     // Copy branchs from the input files
     m_otree->Branch("ns", &ns);
@@ -66,7 +60,7 @@ void NSortProcessor::ActivateBranchs(){
     m_otree->Branch("nhits", &m_nhits);
 }
 
-void NSortProcessor::AddFileList(const std::string & listname){
+void NSortProcessor::AddFileList(const std::string &listname) {
     // read the init
     std::string ifilename;
     std::ifstream ifs(listname);
@@ -85,12 +79,12 @@ void NSortProcessor::AddFileList(const std::string & listname){
 }
 
 
-void NSortProcessor::AddFile(const std::string & filename){
+void NSortProcessor::AddFile(const std::string &filename) {
 
-    if(filename.find("*") != std::string::npos){
+    if (filename.find("*") != std::string::npos) {
 
         int placeWildCard = filename.find("*");
-        std::string postname = filename.substr(1+placeWildCard, filename.length());
+        std::string postname = filename.substr(1 + placeWildCard, filename.length());
         std::string filepath;
         int placeSlash = filename.rfind("/");
         if (filename.rfind("/") != std::string::npos) {
@@ -99,7 +93,7 @@ void NSortProcessor::AddFile(const std::string & filename){
             filepath = "./";
         }
 
-        std::string prename = filename.substr(placeSlash+1, placeWildCard-placeSlash-1);
+        std::string prename = filename.substr(placeSlash + 1, placeWildCard - placeSlash - 1);
         DIR *dir;
         struct dirent *dent;
 
@@ -110,8 +104,8 @@ void NSortProcessor::AddFile(const std::string & filename){
         }
         while ((dent = readdir(dir)) != nullptr) {
             std::string ilist = dent->d_name;
-            if(ilist.find(prename) != std::string::npos && ilist.find(postname) != std::string::npos){
-                m_ifiles.emplace_back(filepath+ilist);
+            if (ilist.find(prename) != std::string::npos && ilist.find(postname) != std::string::npos) {
+                m_ifiles.emplace_back(filepath + ilist);
                 AlreadyMakeFileList = true;
             }
         }
@@ -126,7 +120,7 @@ void NSortProcessor::AddFile(const std::string & filename){
 
 }
 
-void NSortProcessor::SetInputBranchs(){
+void NSortProcessor::SetInputBranchs() {
     m_itree->SetBranchAddress("ns", &ns, &b_ns);
     m_itree->SetBranchAddress("X", X, &b_X);
     m_itree->SetBranchAddress("Y", Y, &b_Y);
@@ -137,13 +131,13 @@ void NSortProcessor::SetInputBranchs(){
     m_itree->SetBranchAddress("pmthitid", &pmthitid, &b_pmthitid);
 }
 
-void NSortProcessor::Process(){
+void NSortProcessor::Process() {
     // loop for input files
     ULong64_t total_entries = 0;
     size_t total_filenum = m_ifiles.size();
     size_t ReadFile = 0;
 
-    for (const TString & ifile : m_ifiles) {
+    for (const TString &ifile : m_ifiles) {
         // display the current input file
         if (Verbose > 1) std::cout << "Inputfile: " << ifile << std::endl;
 
@@ -151,7 +145,7 @@ void NSortProcessor::Process(){
         m_ifile = TFile::Open(ifile, "read");
         m_ifile->cd("events");
         m_itree = new TTree();
-        m_itree = dynamic_cast<TTree*>(gDirectory->Get("events"));
+        m_itree = dynamic_cast<TTree *>(gDirectory->Get("events"));
 
         this->SetInputBranchs();
 
@@ -186,13 +180,13 @@ void NSortProcessor::Process(){
             // FV
             const Float_t r2 = X[0] * X[0] + Y[0] * Y[0];
             const Float_t z_fv = Z[0] + 739.0;
-            m_fv = TMath::Power(TMath::Abs(z_fv/629.0), 3.0) + TMath::Power(TMath::Abs(r2/396900.0), 3.0);
+            m_fv = TMath::Power(TMath::Abs(z_fv / 629.0), 3.0) + TMath::Power(TMath::Abs(r2 / 396900.0), 3.0);
             // <<<------------------------------------
 
             // ------------------------------------>>>
             // nhits
             constexpr UInt_t nNV = 121;
-            std::array<Float_t, nNV> cnt {0};
+            std::array<Float_t, nNV> cnt{0};
             for (UInt_t id : *pmthitid) {
                 if (id >= 20000) {
                     ++cnt[id - 20000];
@@ -201,7 +195,7 @@ void NSortProcessor::Process(){
             Float_t phe = 0.;
             Int_t nhits = 0;
             constexpr Float_t phe_threshold = 0.5;
-            for (UInt_t  iNV = 0; iNV < nNV; ++iNV) {
+            for (UInt_t iNV = 0; iNV < nNV; ++iNV) {
                 if (cnt[iNV] > 0) {
                     phe = gRandom->Gaus(cnt[iNV], TMath::Sqrt(cnt[iNV]) * 0.3);
                 } else {
@@ -233,10 +227,10 @@ void NSortProcessor::Process(){
                 }
             }
             if (ReadFile == total_filenum - 1) {
-                std::cout << "\r" ;
+                std::cout << "\r";
                 std::cout << "[";
                 for (int i = 0; i < barlength; ++i) {
-                        std::cout << "-";
+                    std::cout << "-";
                 }
                 std::cout << "] 100%                                " << std::endl;
             } else {
@@ -255,7 +249,7 @@ void NSortProcessor::Process(){
     if (Verbose > 0) std::cout << total_entries << " events are written." << std::endl;
 }
 
-void NSortProcessor::Terminate(){
+void NSortProcessor::Terminate() {
     m_ofile->cd();
     m_otree->Write();
     m_ofile->Close();
