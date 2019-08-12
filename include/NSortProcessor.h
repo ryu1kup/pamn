@@ -28,15 +28,21 @@ public:
     void AddFile(const std::string &filename);
 
 
-    void SetVerbose(int Verbose) {
+    void SetVerbose(int Verbose, bool graphicalVerbose = false) {
         this->Verbose = Verbose;
+        this->graphicalVerbose = graphicalVerbose;
     }
+
+    void PrintVerboseEachFile(Int_t ReadFile, Int_t NumOfTotalFiles, const TString &ifile);
+
+    void PrintVerboseEachEvent(UInt_t ientry, ULong64_t nentries);
 
 private:
     void SetInputBranchs();
 
     std::vector<TString> m_ifiles;
     int Verbose = 1;
+    bool graphicalVerbose = false;
 
 private:
     // For an output file

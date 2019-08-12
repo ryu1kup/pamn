@@ -134,7 +134,7 @@ void NSortProcessor::SetInputBranchs() {
 void NSortProcessor::Process() {
     // loop for input files
     ULong64_t total_entries = 0;
-    size_t total_filenum = m_ifiles.size();
+    size_t NumOfTotalFiles = m_ifiles.size();
     size_t ReadFile = 0;
 
     for (const TString &ifile : m_ifiles) {
@@ -153,27 +153,7 @@ void NSortProcessor::Process() {
         const ULong64_t nentries = m_itree->GetEntries();
         total_entries += nentries;
         for (UInt_t ientry = 0; ientry < nentries; ++ientry) {
-            if (Verbose > 1) {
-                double progress = (double) ientry / nentries;
-                const int barlength = 80;
-                int pos = progress * barlength;
-                std::cout << "[";
-                for (int i = 0; i < barlength; ++i) {
-                    if (i < pos) {
-                        std::cout << "-";
-                    } else if (i == pos) {
-                        std::cout << ">";
-                    } else {
-                        std::cout << " ";
-                    }
-                }
-                if (ientry == nentries - 1) {
-                    std::cout << "] 100%" << std::endl;
-                } else {
-                    std::cout << "] " << int(progress * 100) << "%\r";
-                }
-                std::cout.flush();
-            }
+            if (Verbose > 1) PrintVerboseEachEvent(ientry,nentries );
             m_itree->GetEntry(ientry);
 
             // ------------------------------------>>>
@@ -212,32 +192,7 @@ void NSortProcessor::Process() {
             m_otree->Fill();
         }
 
-        if (Verbose == 1) {
-            double progress = (double) ReadFile / total_filenum;
-            const int barlength = 50;
-            int pos = progress * barlength;
-            std::cout << "[";
-            for (int i = 0; i < barlength; ++i) {
-                if (i < pos) {
-                    std::cout << "-";
-                } else if (i == pos) {
-                    std::cout << ">";
-                } else {
-                    std::cout << " ";
-                }
-            }
-            if (ReadFile == total_filenum - 1) {
-                std::cout << "\r";
-                std::cout << "[";
-                for (int i = 0; i < barlength; ++i) {
-                    std::cout << "-";
-                }
-                std::cout << "] 100%                                " << std::endl;
-            } else {
-                std::cout << "] " << int(progress * 100) << "%  " << ifile << "\r";
-            }
-            std::cout.flush();
-        }
+        if (Verbose == 1) PrintVerboseEachFile(ReadFile, NumOfTotalFiles, ifile);
 
         // clean up
         delete m_itree;
@@ -253,4 +208,65 @@ void NSortProcessor::Terminate() {
     m_ofile->cd();
     m_otree->Write();
     m_ofile->Close();
+}
+
+void NSortProcessor::PrintVerboseEachEvent(UInt_t ientry, ULong64_t nentries) {
+
+    if (graphicalVerbose == true) {
+        double progress = (double) ientry / nentries;
+        const int barlength = 50;
+        int pos = progress * barlength;
+        std::cout << "[";
+        for (int i = 0; i < barlength; ++i) {
+            if (i < pos) {
+                std::cout << "-";
+            } else if (i == pos) {
+                std::cout << ">";
+            } else {
+                std::cout << " ";
+            }
+        }
+        if (ientry == nentries - 1) {
+            std::cout << "] 100%" << std::endl;
+        } else {
+            std::cout << "] " << int(progress * 100) << "%\r";
+        }
+        std::cout.flush();
+    } else {
+        if (ientry % (nentries / 10) == 0) std::cout << "File read " << 100.0 * ientry / nentries << "%" << std::endl;
+    }
+
+}
+
+void NSortProcessor::PrintVerboseEachFile(Int_t ReadFile, Int_t NumOfTotalFiles, const TString &ifile) {
+
+    if (graphicalVerbose == true) {
+        double progress = (double) ReadFile / NumOfTotalFiles;
+        const int barlength = 50;
+        int pos = progress * barlength;
+        std::cout << "[";
+        for (int i = 0; i < barlength; ++i) {
+            if (i < pos) {
+                std::cout << "-";
+            } else if (i == pos) {
+                std::cout << ">";
+            } else {
+                std::cout << " ";
+            }
+        }
+        if (ReadFile == NumOfTotalFiles - 1) {
+            std::cout << "\r";
+            std::cout << "[";
+            for (int i = 0; i < barlength; ++i) {
+                std::cout << "-";
+            }
+            std::cout << "] 100%                                                                " << std::endl;
+        } else {
+            std::cout << "] " << int(progress * 100) << "%  " << ifile << "\r";
+        }
+        std::cout.flush();
+    } else {
+        std::cout << "Read File: " << ifile << "(" << ReadFile+1 << "/" << NumOfTotalFiles << ")" << std::endl;
+    }
+
 }

@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
     pars.add<std::string>("input_file", 'i', "File name of input file(s)", false, "../../data/output0001_Sort.root");
     pars.add<std::string>("input_list", 'l', "List file name of input files", false, "./input.txt");
     pars.add<int>("verbose", 'v', "Verbose level", false, 1);
+    pars.add("graphical", 'g', "Graphical verbose");
 
     pars.parse_check(argc, argv);
 
@@ -31,7 +32,7 @@ int main(int argc, char **argv) {
 
     // process nSort outputs
     NSortProcessor *processor = new NSortProcessor(OutputName);
-    processor->SetVerbose(Verbose);
+    processor->SetVerbose(Verbose, pars.exist("graphical"));
 
     if (pars.exist("input_file")) processor->AddFile(pars.get<std::string>("input_file"));
     if (pars.exist("input_list")) processor->AddFileList(pars.get<std::string>("input_list"));
