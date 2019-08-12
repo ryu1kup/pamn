@@ -40,11 +40,11 @@ pamn output has the following branches.
 
 | Branch Name | Unit | Description |
 |-------------|------|-------------|
-| ns          |      |             |
-| fv          |      |             |
-| NR          |      |             |
-| Ed          |      |             |
-| secondS2    |      |             |
+| ns          |      | Scatter times of the incident particle. |
+| fv          |      | Fiducial volume parameter, which is 1 if first scatter in TPC is in 4t fiducial volume. |
+| NR          |      | Nuclear recoil parameter, which is 1 if first scatter in TPC is nuclear recoil. |
+| Ed          | keV  | Energy deposition by first scatter in TPC.  |
+| secondS2    | p.e. | S2 corresponding to second scatter in TPC.  |
 | nhits       |      | Number of PMTs which have hit over threshold.  |
 
 
