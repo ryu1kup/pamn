@@ -53,6 +53,8 @@ private:
     // Output parameters
     Float_t m_fv;
     Int_t m_nhits;
+    Bool_t isDangerous;
+    Bool_t isLessStrict;
 
     // For input files
     bool AlreadyMakeFileList = false;
@@ -69,6 +71,7 @@ private:
     Float_t Ed[nsmax];
     Float_t S2[nsmax];
     std::vector<Int_t> *pmthitid = nullptr;
+    std::vector<Double_t> *pmthittime = nullptr;
 
     TBranch *b_ns;
     TBranch *b_X;
@@ -78,6 +81,7 @@ private:
     TBranch *b_Ed;
     TBranch *b_S2;
     TBranch *b_pmthitid;
+    TBranch *b_pmthittime;
 };
 
 #endif

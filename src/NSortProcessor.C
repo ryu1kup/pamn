@@ -54,8 +54,11 @@ void NSortProcessor::ActivateBranchs() {
     m_otree->Branch("Ed", &Ed[0]);
     m_otree->Branch("secondS2", &S2[1]);
     m_otree->Branch("pmthitid", &pmthitid);
+    m_otree->Branch("pmthittime", &pmthittime);
 
     // Calc variables in Process()
+    m_otree->Branch("isDangerous", &isDangerous, "isDangerous/O");
+    m_otree->Branch("isLessStrict", &isLessStrict, "isLessStrict/O");
     m_otree->Branch("fv", &m_fv);
     m_otree->Branch("nhits", &m_nhits);
 }
@@ -129,6 +132,7 @@ void NSortProcessor::SetInputBranchs() {
     m_itree->SetBranchAddress("Ed", Ed, &b_Ed);
     m_itree->SetBranchAddress("S2", S2, &b_S2);
     m_itree->SetBranchAddress("pmthitid", &pmthitid, &b_pmthitid);
+    m_itree->SetBranchAddress("pmthittime", &pmthittime, &b_pmthittime);
 }
 
 void NSortProcessor::Process() {
@@ -186,6 +190,21 @@ void NSortProcessor::Process() {
                 }
             }
             m_nhits = nhits;
+            // <<<------------------------------------
+
+            // ------------------------------------>>>
+            // Add cut
+
+            isLessStrict = false;
+            if(ns>0 && NR[0]==1) isLessStrict = true;
+
+            isDangerous = false;
+            double FVcut = (pow(TMath::Abs((z_fv)/629.),3.0)+pow(TMath::Abs((r2)/396900.),3.0));
+            if (ns==1){
+                if ( (4<Ed[0] && Ed[0]<50) && FVcut<1. && NR[0]==1) isDangerous = true;
+            } else if (ns>1){
+                if ( (4<Ed[0] && Ed[0]<50) && FVcut<1. && NR[0]==1 && S2[1]<100.) isDangerous = true;
+            }
             // <<<------------------------------------
 
             // fill output tree
