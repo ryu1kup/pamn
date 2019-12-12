@@ -70,6 +70,7 @@ private:
     Float_t NR[nsmax];
     Float_t Ed[nsmax];
     Float_t S2[nsmax];
+    Double_t Time[nsmax];
     std::vector<Int_t> *pmthitid = nullptr;
     std::vector<Double_t> *pmthittime = nullptr;
 
@@ -80,6 +81,7 @@ private:
     TBranch *b_NR;
     TBranch *b_Ed;
     TBranch *b_S2;
+    TBranch *b_Time;
     TBranch *b_pmthitid;
     TBranch *b_pmthittime;
 };

@@ -53,6 +53,7 @@ void NSortProcessor::ActivateBranchs() {
     m_otree->Branch("NR", &NR[0]);
     m_otree->Branch("Ed", &Ed[0]);
     m_otree->Branch("secondS2", &S2[1]);
+    m_otree->Branch("Time", &Time[0]);
     m_otree->Branch("pmthitid", &pmthitid);
     m_otree->Branch("pmthittime", &pmthittime);
 
@@ -131,6 +132,7 @@ void NSortProcessor::SetInputBranchs() {
     m_itree->SetBranchAddress("NR", NR, &b_NR);
     m_itree->SetBranchAddress("Ed", Ed, &b_Ed);
     m_itree->SetBranchAddress("S2", S2, &b_S2);
+    m_itree->SetBranchAddress("Time", Time, &b_Time);
     m_itree->SetBranchAddress("pmthitid", &pmthitid, &b_pmthitid);
     m_itree->SetBranchAddress("pmthittime", &pmthittime, &b_pmthittime);
 }
