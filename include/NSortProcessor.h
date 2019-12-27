@@ -44,6 +44,7 @@ private:
     int Verbose = 1;
     bool graphicalVerbose = false;
 
+
 private:
     // For an output file
     TString m_output;
@@ -71,8 +72,10 @@ private:
     Float_t Ed[nsmax];
     Float_t S2[nsmax];
     Double_t Time[nsmax];
-    std::vector<Int_t> *pmthitid = nullptr;
-    std::vector<Double_t> *pmthittime = nullptr;
+    std::vector<Int_t> *pmthitid_nSort = nullptr;
+    std::vector<Double_t> *pmthittime_nSort = nullptr;
+    std::vector<Float_t> *pmthitenergy_nSort = nullptr;
+
 
     TBranch *b_ns;
     TBranch *b_X;
@@ -84,6 +87,15 @@ private:
     TBranch *b_Time;
     TBranch *b_pmthitid;
     TBranch *b_pmthittime;
+    TBranch *b_pmthitenergy;
+
+    std::vector<Int_t> *pmthitid = nullptr;
+    std::vector<Double_t> *pmthittime = nullptr;
+    std::vector<Float_t> *pmthitenergy = nullptr;
+
+    std::vector<Float_t> nv_pmt_wl;
+    std::vector<Float_t> nv_pmt_qe;
+
 };
 
 #endif

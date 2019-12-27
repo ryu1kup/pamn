@@ -4,7 +4,8 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(pamn)
 
-set(CMAKE_INSTALL_PREFIX "../bin")
+set(CMAKE_INSTALL_PREFIX "..")
+set(WORK_DIR_NAME work)
 
 # setting ROOT
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
@@ -22,5 +23,7 @@ target_link_libraries(pamn ${ROOT_LIBRARIES})
 # compiler options
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -O1")
 
+file(INSTALL ${PROJECT_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_PREFIX}/${WORK_DIR_NAME})
+
 # install the binary
-install(TARGETS pamn DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS pamn DESTINATION ${WORK_DIR_NAME})
