@@ -17,6 +17,16 @@ NSortProcessor::NSortProcessor(TString output) :
         m_output(output) {
     m_ofile = new TFile(m_output, "recreate");
     m_otree = new TTree("events", "process and merge nSort results");
+
+
+    // init QE table
+    std::ifstream qe_file_table("./data/clip0116.txt");
+    Float_t tmpwl = 0.;
+    Float_t tmpqe = 0.;
+    while (qe_file_table >> tmpwl >> tmpqe) {
+        nv_pmt_wl.push_back(tmpwl);
+        nv_pmt_qe.push_back(tmpqe);
+    }
 }
 
 NSortProcessor::~NSortProcessor() {
@@ -53,9 +63,14 @@ void NSortProcessor::ActivateBranchs() {
     m_otree->Branch("NR", &NR[0]);
     m_otree->Branch("Ed", &Ed[0]);
     m_otree->Branch("secondS2", &S2[1]);
+    m_otree->Branch("Time", &Time[0]);
     m_otree->Branch("pmthitid", &pmthitid);
+    m_otree->Branch("pmthittime", &pmthittime);
+    m_otree->Branch("pmthitenergy", &pmthitenergy);
 
     // Calc variables in Process()
+    m_otree->Branch("isDangerous", &isDangerous, "isDangerous/O");
+    m_otree->Branch("isLessStrict", &isLessStrict, "isLessStrict/O");
     m_otree->Branch("fv", &m_fv);
     m_otree->Branch("nhits", &m_nhits);
 }
@@ -128,7 +143,10 @@ void NSortProcessor::SetInputBranchs() {
     m_itree->SetBranchAddress("NR", NR, &b_NR);
     m_itree->SetBranchAddress("Ed", Ed, &b_Ed);
     m_itree->SetBranchAddress("S2", S2, &b_S2);
-    m_itree->SetBranchAddress("pmthitid", &pmthitid, &b_pmthitid);
+    m_itree->SetBranchAddress("Time", Time, &b_Time);
+    m_itree->SetBranchAddress("pmthitid", &pmthitid_nSort, &b_pmthitid);
+    m_itree->SetBranchAddress("pmthittime", &pmthittime_nSort, &b_pmthittime);
+    m_itree->SetBranchAddress("pmthitenergy", &pmthitenergy_nSort, &b_pmthitenergy);
 }
 
 void NSortProcessor::Process() {
@@ -149,12 +167,58 @@ void NSortProcessor::Process() {
 
         this->SetInputBranchs();
 
+        TRandom3 theRandom;
+        theRandom.SetSeed(0);
+        bool ConsiderQE = true;
+
         // loop for events
         const ULong64_t nentries = m_itree->GetEntries();
         total_entries += nentries;
         for (UInt_t ientry = 0; ientry < nentries; ++ientry) {
-            if (Verbose > 1) PrintVerboseEachEvent(ientry,nentries );
+            if (Verbose > 1) PrintVerboseEachEvent(ientry, nentries);
+
             m_itree->GetEntry(ientry);
+
+            pmthitid->clear();
+            pmthittime->clear();
+            pmthitenergy->clear();
+
+            // ------------------------------------>>>
+            // Drop nV PMT HIT following QE
+
+
+            if(ConsiderQE) {
+                for (size_t i = 0; i < pmthitenergy_nSort->size(); ++i) {
+
+                    const Float_t wavelength = 1239.84 / pmthitenergy_nSort->at(i);
+                    Float_t QE = 0.;
+                    const size_t Nlambda = nv_pmt_wl.size();
+                    for (size_t ilambda = 0; ilambda < Nlambda - 1; ++ilambda) {
+                        if (wavelength >= nv_pmt_wl.at(ilambda) && wavelength < nv_pmt_wl.at(ilambda + 1)) {
+                            QE = 0.01 * ((nv_pmt_qe.at(ilambda + 1) - nv_pmt_qe.at(ilambda)) /
+                                         (nv_pmt_wl.at(ilambda + 1) - nv_pmt_wl.at(ilambda)) *
+                                         (wavelength - nv_pmt_wl.at(ilambda)) + nv_pmt_qe.at(ilambda));
+                            break;
+                        }
+                    }
+
+                    const Float_t prob = theRandom.Rndm();
+                    if (prob < QE) {
+                        pmthitid->push_back(pmthitid_nSort->at(i));
+                        pmthittime->push_back(pmthittime_nSort->at(i));
+                        pmthitenergy->push_back(pmthitenergy_nSort->at(i));
+                    }
+                }
+            } else {
+
+                for (size_t i = 0; i < pmthitenergy_nSort->size(); ++i) {
+                    pmthitid->push_back(pmthitid_nSort->at(i));
+                    pmthittime->push_back(pmthittime_nSort->at(i));
+                    pmthitenergy->push_back(pmthitenergy_nSort->at(i));
+                }
+            }
+
+            // <<<------------------------------------
 
             // ------------------------------------>>>
             // FV
@@ -186,6 +250,21 @@ void NSortProcessor::Process() {
                 }
             }
             m_nhits = nhits;
+            // <<<------------------------------------
+
+            // ------------------------------------>>>
+            // Add cut
+
+            isLessStrict = false;
+            if(ns>0 && NR[0]==1) isLessStrict = true;
+
+            isDangerous = false;
+            double FVcut = (pow(TMath::Abs((z_fv)/629.),3.0)+pow(TMath::Abs((r2)/396900.),3.0));
+            if (ns==1){
+                if ( (4<Ed[0] && Ed[0]<50) && FVcut<1. && NR[0]==1) isDangerous = true;
+            } else if (ns>1){
+                if ( (4<Ed[0] && Ed[0]<50) && FVcut<1. && NR[0]==1 && S2[1]<100.) isDangerous = true;
+            }
             // <<<------------------------------------
 
             // fill output tree

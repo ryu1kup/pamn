@@ -44,6 +44,7 @@ private:
     int Verbose = 1;
     bool graphicalVerbose = false;
 
+
 private:
     // For an output file
     TString m_output;
@@ -53,6 +54,8 @@ private:
     // Output parameters
     Float_t m_fv;
     Int_t m_nhits;
+    Bool_t isDangerous;
+    Bool_t isLessStrict;
 
     // For input files
     bool AlreadyMakeFileList = false;
@@ -68,7 +71,11 @@ private:
     Float_t NR[nsmax];
     Float_t Ed[nsmax];
     Float_t S2[nsmax];
-    std::vector<Int_t> *pmthitid = nullptr;
+    Double_t Time[nsmax];
+    std::vector<Int_t> *pmthitid_nSort = nullptr;
+    std::vector<Double_t> *pmthittime_nSort = nullptr;
+    std::vector<Float_t> *pmthitenergy_nSort = nullptr;
+
 
     TBranch *b_ns;
     TBranch *b_X;
@@ -77,7 +84,18 @@ private:
     TBranch *b_NR;
     TBranch *b_Ed;
     TBranch *b_S2;
+    TBranch *b_Time;
     TBranch *b_pmthitid;
+    TBranch *b_pmthittime;
+    TBranch *b_pmthitenergy;
+
+    std::vector<Int_t> *pmthitid = nullptr;
+    std::vector<Double_t> *pmthittime = nullptr;
+    std::vector<Float_t> *pmthitenergy = nullptr;
+
+    std::vector<Float_t> nv_pmt_wl;
+    std::vector<Float_t> nv_pmt_qe;
+
 };
 
 #endif
